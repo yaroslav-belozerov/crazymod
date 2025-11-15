@@ -1,0 +1,14 @@
+{
+  "shoot": {
+    "subtitle": "subtitles.my-mod.shoot",
+    "sounds": [
+      "my-mod:shoot"
+    ]
+  },
+  "deflate": {
+    "subtitle": "subtitles.my-mod.deflate",
+    "sounds": [
+      "my-mod:deflate"
+    ]
+  }
+}
