@@ -1,5 +1,6 @@
 package tech.tarakoshka.mymod.items;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -7,50 +8,95 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import tech.tarakoshka.mymod.MyMod;
 import tech.tarakoshka.mymod.MySounds;
-import tech.tarakoshka.mymod.Mymod;
+import tech.tarakoshka.mymod.data.MyDataComponents;
+import tech.tarakoshka.mymod.util.Shapes;
+
+import static java.lang.Math.max;
 
 public class Homer extends Item {
-
     public Homer(Properties settings) {
         super(settings.durability(100).stacksTo(1));
     }
 
     @Override
-    public @NotNull InteractionResult use(Level level, Player player, InteractionHand interactionHand) {
-        if (level.isClientSide()) {
-            return InteractionResult.PASS;
+    public void onUseTick(Level level, LivingEntity livingEntity, ItemStack itemStack, int i) {
+        if (!level.isClientSide() && livingEntity instanceof Player player) {
+            itemStack.set(MyDataComponents.SHOOTING_HOMER, true);
+            int ticksUsed = this.getUseDuration(itemStack, livingEntity) - i;
+            if (ticksUsed >= 40) {
+                itemStack.set(MyDataComponents.HOMER_CHARGED, true);
+            }
         }
-
-        shootHomer(level, player, 20, 30);
-
-
-        var item = player.getItemInHand(interactionHand);
-        if (item.nextDamageWillBreak()) {
-            level.playSound(
-                    null,
-                    player.getX(),
-                    player.getY(),
-                    player.getZ(),
-                    MySounds.DEFLATE,
-                    SoundSource.PLAYERS,
-                    1.0F, // volume
-                    1.0F  // pitch
-            );
-
-            item.shrink(1); }
-        item.setDamageValue(item.getDamageValue() + 1);
-
-        return InteractionResult.SUCCESS;
+        super.onUseTick(level, livingEntity, itemStack, i);
     }
 
-    private void shootHomer(Level level, Player player, int maxBlocksDestroyed, int homerLength) {
+
+    @Override
+    public void inventoryTick(ItemStack itemStack, ServerLevel serverLevel, Entity entity, @Nullable EquipmentSlot equipmentSlot) {
+        var isCharged = itemStack.get(MyDataComponents.HOMER_CHARGED);
+        itemStack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, Boolean.TRUE.equals(isCharged));
+        super.inventoryTick(itemStack, serverLevel, entity, equipmentSlot);
+    }
+
+    @Override
+    public @NotNull ItemStack finishUsingItem(ItemStack itemStack, Level level, LivingEntity entity) {
+//        if (!level.isClientSide() && entity instanceof Player player) {
+//            shootHomer(level, player, 20, 30, itemStack);
+//            itemStack.set(MyDataComponents.SHOOTING_HOMER, false);
+//            itemStack.set(MyDataComponents.HOMER_CHARGED, false);
+//            itemStack.set(MyDataComponents.VALID_SPELL, false);
+//        }
+        return itemStack;
+    }
+
+    @Override
+    public boolean releaseUsing(ItemStack itemStack, Level level, LivingEntity livingEntity, int i) {
+        if (!level.isClientSide() && livingEntity instanceof Player player) {
+            var isCharged = itemStack.get(MyDataComponents.HOMER_CHARGED);
+            var spell = itemStack.get(MyDataComponents.VALID_SPELL);
+            if (Boolean.TRUE.equals(isCharged) && Shapes.shapes.containsKey(spell)) {
+                shootHomer(level, player, 20, 30, itemStack);
+//                for (var e : Shapes.shapes.entrySet()) {
+//                    if (e.getKey().equals(spell)) {
+//                        shootHomer(level, player, 20, 30, itemStack);
+//                    }
+//                }
+            }
+            itemStack.set(MyDataComponents.SHOOTING_HOMER, false);
+            itemStack.set(MyDataComponents.HOMER_CHARGED, false);
+            itemStack.set(MyDataComponents.VALID_SPELL, "");
+        }
+        return super.releaseUsing(itemStack, level, livingEntity, i);
+    }
+
+    @Override
+    public @NotNull InteractionResult use(Level level, Player player, InteractionHand interactionHand) {
+        player.startUsingItem(interactionHand);
+        return InteractionResult.CONSUME;
+    }
+
+    @Override
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
+        return 300;
+    }
+
+    @Override
+    public @NotNull ItemUseAnimation getUseAnimation(ItemStack itemStack) {
+        return ItemUseAnimation.BOW;
+    }
+
+    private void shootHomer(Level level, Player player, int maxBlocksDestroyed, int homerLength, ItemStack itemStack) {
         if (level.isClientSide()) {
             return;
         }
@@ -73,14 +119,24 @@ public class Homer extends Item {
                 1.0F  // pitch
         );
 
-        while (hit.getType() != HitResult.Type.MISS && blocksDestroyed < maxBlocksDestroyed) {
-            var type = hit.getType();
-            switch (type) {
-                case HitResult.Type.BLOCK -> {
-                    level.destroyBlock(hit.getBlockPos(), false);
-                }
-                case  HitResult.Type.ENTITY -> {}
-            }
+        if (itemStack.nextDamageWillBreak()) {
+            level.playSound(
+                    null,
+                    player.getX(),
+                    player.getY(),
+                    player.getZ(),
+                    MySounds.DEFLATE,
+                    SoundSource.PLAYERS,
+                    2.0F, // volume
+                    1.0F  // pitch
+            );
+
+            itemStack.shrink(1);
+        }
+        itemStack.setDamageValue(itemStack.getDamageValue() + 1);
+
+        while (hit.getType() == HitResult.Type.BLOCK && blocksDestroyed < maxBlocksDestroyed) {
+            level.destroyBlock(hit.getBlockPos(), false);
             blocksDestroyed++;
             hit = level.clip(new ClipContext(eyePos, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, player));
         }
@@ -118,11 +174,11 @@ public class Homer extends Item {
         Vec3 direction = end.subtract(start).normalize();
         double distance = start.distanceTo(end);
 
-        for (double d = 2; d < distance; d += 0.5f) {
+        for (double d = .5; d < distance; d += .5) {
             Vec3 particlePos = start.add(direction.multiply(d, d, d));
 
             serverLevel.sendParticles(
-                    Mymod.MILK_PARTICLE,
+                    MyMod.MILK_PARTICLE,
                     particlePos.x,
                     particlePos.y,
                     particlePos.z,
@@ -131,14 +187,15 @@ public class Homer extends Item {
                     0
             );
             serverLevel.sendParticles(
-                    Mymod.MILK_PARTICLE,
+                    MyMod.MILK_PARTICLE,
                     particlePos.x,
                     particlePos.y,
                     particlePos.z,
                     2,
-                    .5, .5, .5,
-                    .5
+                    direction.x / 3, direction.y / 3, direction.z / 3,
+                    .1
             );
         }
     }
+
 }

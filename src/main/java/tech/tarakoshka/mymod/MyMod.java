@@ -9,9 +9,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.tarakoshka.mymod.data.MyDataComponents;
 import tech.tarakoshka.mymod.items.MyItems;
+import tech.tarakoshka.mymod.util.Shapes;
 
-public class Mymod implements ModInitializer {
+public class MyMod implements ModInitializer {
 	public static final String MOD_ID = "my-mod";
 
 	// This logger is used to write text to the console and the log file.
@@ -33,6 +35,8 @@ public class Mymod implements ModInitializer {
 
         MyItems.initialize();
         MySounds.registerSounds();
+        MyDataComponents.register();
+        Shapes.registerShapePayload();
 
 		LOGGER.info("Hello Fabric world!");
 	}
