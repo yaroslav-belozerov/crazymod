@@ -16,13 +16,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"tech.tarakoshka.mymod.Mymod"
+          "tech.tarakoshka.mymod.MyMod"
 		],
 		"client": [
-			"tech.tarakoshka.mymod.MymodClient"
+          "tech.tarakoshka.mymod.MyModClient"
 		],
 		"fabric-datagen": [
-			"tech.tarakoshka.mymod.MymodDataGenerator"
+          "tech.tarakoshka.mymod.MyModDataGenerator"
 		]
 	},
 	"mixins": [

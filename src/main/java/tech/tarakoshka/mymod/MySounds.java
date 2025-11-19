@@ -10,7 +10,7 @@ public class MySounds {
     public static final SoundEvent DEFLATE = registerSound("deflate");
 
     private static SoundEvent registerSound(String sound) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Mymod.MOD_ID, sound);
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(MyMod.MOD_ID, sound);
         return Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
     }
 

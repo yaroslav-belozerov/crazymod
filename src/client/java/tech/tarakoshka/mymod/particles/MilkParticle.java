@@ -3,28 +3,38 @@ package tech.tarakoshka.mymod.particles;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.particle.v1.FabricSpriteProvider;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.NotNull;
+import tech.tarakoshka.mymod.data.MyDataComponents;
+import tech.tarakoshka.mymod.util.Shapes;
 
 @Environment(EnvType.CLIENT)
 public class MilkParticle extends SingleQuadParticle {
-
-    protected MilkParticle(ClientLevel world, double x, double y, double z, double xvel, double yvel, double zvel,
+    protected MilkParticle(ClientLevel level, double x, double y, double z, double xvel, double yvel, double zvel,
                            TextureAtlasSprite sprite) {
-        super(world, x, y, z, sprite);
+        super(level, x, y, z, sprite);
+
+        var mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            var spell = mc.player.getMainHandItem().get(MyDataComponents.VALID_SPELL);
+            var color = Shapes.mapColorFromSpell(spell);
+            this.rCol = color.getLeft();
+            this.gCol = color.getMiddle();
+            this.bCol = color.getRight();
+        }
 
         this.friction = 0.96F;
         this.gravity = 0.0F;
         this.quadSize = 0.3F;
         this.lifetime = 10;
 
-        this.rCol = 1.0F;
-        this.gCol = 1.0F;
-        this.bCol = 1.0F;
         this.alpha = 1.0F;
 
         this.xd = xvel;
@@ -35,8 +45,8 @@ public class MilkParticle extends SingleQuadParticle {
     @Override
     public void tick() {
         super.tick();
-        // Fade out over time
-        this.alpha = 1.0F - ((float)this.age / (float)this.lifetime);
+        this.quadSize = 0.3F - ((float) this.age / this.lifetime) * 0.3F;
+        this.alpha = 1.0F - ((float) this.age / this.lifetime);
     }
 
     @Override
