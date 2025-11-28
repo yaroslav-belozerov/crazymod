@@ -1,0 +1,14 @@
+{
+  "shoot": {
+    "subtitle": "subtitles.mending-mastery.shoot",
+    "sounds": [
+      "mending-mastery:shoot"
+    ]
+  },
+  "deflate": {
+    "subtitle": "subtitles.mending-mastery.deflate",
+    "sounds": [
+      "mending-mastery:deflate"
+    ]
+  }
+}
