@@ -5,6 +5,14 @@ import net.minecraft.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
+import org.jetbrains.annotations.NotNull;
 import tech.tarakoshka.mending_mastery.data.MyDataComponents;
 import tech.tarakoshka.mending_mastery.items.wand.MagicWand;
 import tech.tarakoshka.mending_mastery.network.ClientNetworkHandler;
@@ -25,16 +33,15 @@ public class ModHud implements HudElement {
         if (mc.player == null) return;
 
         if (mc.player.getMainHandItem().getItem() instanceof MagicWand) {
-            handleMagicWand(guiGraphics, mc);
+            handleMagicWand(guiGraphics, mc, 0.2);
         }
-        ;
     }
 
     private static final List<ScreenPoint> trajectoryPoints = new ArrayList<>();
     private static ScreenPoint lastStart;
     public static final int MAX_POINTS = 100;
 
-    private static void handleMagicWand(GuiGraphics gui, Minecraft mc) {
+    private static void handleMagicWand(GuiGraphics gui, Minecraft mc, Double spellSimilarity) {
         if (mc.player == null) return;
 
         var itemStack = mc.player.getMainHandItem();
@@ -83,7 +90,7 @@ public class ModHud implements HudElement {
         } else {
             for (var e : shapes.entrySet()) {
                 var similar = calculateSimilarity(trajectoryPoints, e.getValue());
-                if (similar < .3) {
+                if (similar < spellSimilarity) {
                     ClientNetworkHandler.sendCustomPacket(e.getKey());
                     trajectoryPoints.clear();
                 }

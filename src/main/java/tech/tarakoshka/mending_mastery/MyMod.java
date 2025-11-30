@@ -9,6 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.tarakoshka.mending_mastery.blocks.ModBlocks;
 import tech.tarakoshka.mending_mastery.data.MyDataComponents;
 import tech.tarakoshka.mending_mastery.items.ModItems;
 import tech.tarakoshka.mending_mastery.items.wand.WandShapes;
@@ -34,6 +35,7 @@ public class MyMod implements ModInitializer {
 		// Proceed with mild caution.
 
         ModItems.initialize();
+        ModBlocks.initialize();
         MySounds.registerSounds();
         MyDataComponents.register();
         WandShapes.registerShapePayload();
