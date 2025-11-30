@@ -1,4 +1,8 @@
 {
   "item.mending-mastery.magic-wand": "Magic Wand",
-  "block.mending-mastery.infuser": "Infuser"
+  "block.mending-mastery.infuser": "Infuser",
+  "mending-mastery.spell.swoosh": "Swoosh",
+  "mending-mastery.spell.circle": "Circle",
+  "mending-mastery.spell.c": "C",
+  "mending-mastery.spell.v": "V"
 }

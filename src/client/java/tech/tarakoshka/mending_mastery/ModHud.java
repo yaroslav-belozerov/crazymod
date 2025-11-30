@@ -77,21 +77,22 @@ public class ModHud implements HudElement {
         var spell = itemStack.get(MyDataComponents.VALID_SPELL);
         var isSpellValid = !(spell == null || spell.isBlank());
         if (isSpellValid) {
-            gui.drawString(mc.font, spell, (gui.guiWidth() - mc.font.width(spell)) / 2, gui.guiHeight() / 2 + width, 0xFF000000);
             for (var e : shapes.entrySet()) {
-                if (spell.equals(e.getKey())) {
+                if (spell.equals(e.getKey().label)) {
                     for (TrajPoint p : e.getValue()) {
                         int x = (int) (p.x() * width + gui.guiWidth() / 2.0 - width / 2.0);
                         int y = (int) (p.y() * width + gui.guiHeight() / 2.0 - width / 2.0);
                         gui.fill(x - ptHalfSize, y - ptHalfSize, x + ptHalfSize, y + ptHalfSize, 0xFF00FF00);
                     }
+                    var text = Component.translatable("mending-mastery.spell." + spell);
+                    gui.drawString(mc.font, text, (gui.guiWidth() - mc.font.width(text)) / 2, gui.guiHeight() / 2 + width, 0xFF000000);
                 }
             }
         } else {
             for (var e : shapes.entrySet()) {
                 var similar = calculateSimilarity(trajectoryPoints, e.getValue());
                 if (similar < spellSimilarity) {
-                    ClientNetworkHandler.sendCustomPacket(e.getKey());
+                    ClientNetworkHandler.sendCustomPacket(e.getKey().label);
                     trajectoryPoints.clear();
                 }
             }

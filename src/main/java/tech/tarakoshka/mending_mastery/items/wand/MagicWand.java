@@ -21,6 +21,8 @@ import tech.tarakoshka.mending_mastery.MyMod;
 import tech.tarakoshka.mending_mastery.MySounds;
 import tech.tarakoshka.mending_mastery.data.MyDataComponents;
 
+import java.util.Arrays;
+
 import static java.lang.Math.max;
 
 public class MagicWand extends Item {
@@ -57,9 +59,10 @@ public class MagicWand extends Item {
     public boolean releaseUsing(ItemStack itemStack, Level level, LivingEntity livingEntity, int i) {
         if (!level.isClientSide() && livingEntity instanceof Player player) {
             var isCharged = itemStack.get(MyDataComponents.WAND_CHARGED);
-            var spell = itemStack.get(MyDataComponents.VALID_SPELL);
-            if (Boolean.TRUE.equals(isCharged) && WandShapes.shapes.containsKey(spell)) {
-                wandShoot(level, player, 20, 30, itemStack);
+            var spellName = itemStack.get(MyDataComponents.VALID_SPELL);
+            if (Boolean.TRUE.equals(isCharged)) {
+                var shape = Arrays.stream(WandShapes.Shape.values()).filter((it) -> it.label.equals(spellName)).findFirst();
+                shape.ifPresent(value -> wandShoot(level, player, 20, 30, itemStack, value));
             }
             itemStack.set(MyDataComponents.WAND_SHOOTING, false);
             itemStack.set(MyDataComponents.WAND_CHARGED, false);
@@ -84,7 +87,7 @@ public class MagicWand extends Item {
         return ItemUseAnimation.BOW;
     }
 
-    private void wandShoot(Level level, Player player, int maxBlocksDestroyed, int range, ItemStack itemStack) {
+    private void wandShoot(Level level, Player player, int maxBlocksDestroyed, int range, ItemStack itemStack, WandShapes.Shape shape) {
         if (level.isClientSide()) {
             return;
         }
@@ -94,7 +97,6 @@ public class MagicWand extends Item {
         Vec3 end = eyePos.add(look.multiply(range, range, range));
         var hit = level.clip(new ClipContext(eyePos, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, player));
         var blocksDestroyed = 0;
-        damageEntitiesInBeam(serverLevel, player, eyePos, end);
         spawnLaserParticles(serverLevel, eyePos, end);
         level.playSound(
                 null,
@@ -123,10 +125,18 @@ public class MagicWand extends Item {
         }
         itemStack.setDamageValue(itemStack.getDamageValue() + 1);
 
-        while (hit.getType() == HitResult.Type.BLOCK && blocksDestroyed < maxBlocksDestroyed) {
-            level.destroyBlock(hit.getBlockPos(), false);
-            blocksDestroyed++;
-            hit = level.clip(new ClipContext(eyePos, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, player));
+        switch (shape) {
+            case CIRCLE -> {
+                damageEntitiesInBeam(serverLevel, player, eyePos, end);
+            }
+            case V -> {
+                while (hit.getType() == HitResult.Type.BLOCK && blocksDestroyed < maxBlocksDestroyed) {
+                    level.destroyBlock(hit.getBlockPos(), false);
+                    blocksDestroyed++;
+                    hit = level.clip(new ClipContext(eyePos, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, player));
+                }
+            }
+            default -> {}
         }
     }
 

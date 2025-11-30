@@ -11,9 +11,7 @@ import tech.tarakoshka.mending_mastery.util.CustomStringPayload;
 import tech.tarakoshka.mending_mastery.util.ScreenPoint;
 import tech.tarakoshka.mending_mastery.util.TrajPoint;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.max;
 
@@ -69,27 +67,41 @@ public class WandShapes {
         return builder.build();
     };
 
-    private static Map<String, List<TrajPoint>> getShapes() {
-        ImmutableMap.Builder<String, List<TrajPoint>> builder = new ImmutableMap.Builder<>();
-        builder.put("swoosh", swoosh());
-        builder.put("circle", circle());
-        builder.put("C", C());
-        builder.put("V", V());
+    public enum Shape {
+        SWOOSH("swoosh"), CIRCLE("circle"), C("c"), V("v");
+
+        public final String label;
+
+        Shape(String label) {
+            this.label = label;
+        }
+    }
+
+    private static Map<Shape, List<TrajPoint>> getShapes() {
+        ImmutableMap.Builder<Shape, List<TrajPoint>> builder = new ImmutableMap.Builder<>();
+        builder.put(Shape.SWOOSH, swoosh());
+        builder.put(Shape.CIRCLE, circle());
+        builder.put(Shape.C, C());
+        builder.put(Shape.V, V());
         return builder.build();
     }
 
     public static Triple<Float, Float, Float> mapColorFromSpell(String spellName) {
-        return switch (spellName) {
-            case "swoosh" -> Triple.of(0f, 1f, 0f);
-            case "circle" -> Triple.of(0f, 0f, 1f);
-            case "C" -> Triple.of(1f, 0f, 1f);
-            case "V" -> Triple.of(0f, 1f, 1f);
-            case null, default -> Triple.of(1f, 1f, 1f);
+        var shape = Arrays.stream(Shape.values()).filter((it) -> it.label.equals(spellName)).findFirst();
+        if (shape.isEmpty()) {
+            return Triple.of(1f, 1f, 1f);
+        }
+
+        return switch (shape.get()) {
+            case CIRCLE -> Triple.of(1f, 0f, 0f);
+            case V -> Triple.of(0f, 1f, 0f);
+            case SWOOSH -> Triple.of(1f, 1f, 0f);
+            case C -> Triple.of(1f, 0f, 1f);
         };
     }
 
 
-    public static Map<String, List<TrajPoint>> shapes = getShapes();
+    public static Map<Shape, List<TrajPoint>> shapes = getShapes();
 
     public static double calculateSimilarity(List<ScreenPoint> path, List<TrajPoint> normalPath) {
         if (path.isEmpty() || normalPath.isEmpty()) return Double.MAX_VALUE;
