@@ -30,6 +30,10 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         guiGraphics.fill(x + this.imageWidth - 1, y, x + this.imageWidth, y + this.imageHeight, 0xFFFFFFFF);
         guiGraphics.fill(x, y + this.imageHeight - 1, x + this.imageWidth, y + this.imageHeight, 0xFFFFFFFF);
 
+        guiGraphics.fill(x + 56, y + 17, x + 72, y + 33, 0xFF8B8B8B);
+        guiGraphics.fill(x + 56, y + 53, x + 72, y + 69, 0xFF8B8B8B);
+        guiGraphics.fill(x + 116, y + 35, x + 132, y + 51, 0xFF8B8B8B);
+
         if (this.menu.isLit()) {
             int burnProgress = this.menu.getBurnProgress();
             guiGraphics.fill(x + 57, y + 37 + 13 - burnProgress, x + 70, y + 50, 0xFFFF6600);

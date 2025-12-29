@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RRR",
+    "SN ",
+    "RRR"
+  ],
+  "key": {
+    "R": "minecraft:resin_brick",
+    "S": "minecraft:sculk_sensor",
+    "N": "minecraft:nether_star"
+  },
+  "result": {
+    "id": "mending-mastery:infuser",
+    "count": 1
+  }
+}
